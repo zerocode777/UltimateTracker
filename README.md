@@ -4,6 +4,14 @@ A personal torrent meta-search aggregator that searches 15+ torrent sites simult
 
 ![Dark blue themed UI with real-time search results](https://img.shields.io/badge/localhost-7777-blue)
 
+## Screenshots
+
+### Search across all sources
+![Search results for "knight"](screenshots/search-all.png)
+
+### Category filtering (eBooks)
+![eBooks search for "a song of ice and fire"](screenshots/search-ebooks.png)
+
 ## Features
 
 - **Multi-source search** — queries 15+ torrent sites at once

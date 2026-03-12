@@ -262,6 +262,36 @@ class RankingsSearcher {
     const catMap = { movies: 200, tv: 200, games: 400, books: 601, audiobooks: 102 };
     const cat = catMap[category] || 0;
 
+    // For audiobooks: try Croatian first, fall back to English
+    if (category === 'audiobooks') {
+      // Strip "audiobook" keyword to get clean title for Croatian search
+      const cleanTitle = title.replace(/\s*audiobook\s*/gi, ' ').trim();
+      const croatianQueries = [
+        `${cleanTitle} audioknjiga`,
+        `${cleanTitle} hrvatski`,
+        `${cleanTitle} croatian audiobook`,
+      ];
+
+      for (const cQuery of croatianQueries) {
+        const cUrl = `https://apibay.org/q.php?q=${encodeURIComponent(cQuery)}&cat=${cat}`;
+        try {
+          const cData = await this.fetcher.fetchJSON(cUrl);
+          if (Array.isArray(cData) && !(cData.length === 1 && cData[0].name === 'No results returned')) {
+            const cTitleWords = cleanTitle.toLowerCase().split(/\s+/).filter(w => w.length >= 3);
+            const cImportant = cTitleWords.slice(0, Math.min(3, cTitleWords.length));
+            const cRelevant = cData.filter(item => {
+              const nameLower = item.name.toLowerCase().replace(/[.\-_]/g, ' ');
+              return cImportant.every(w => nameLower.includes(w));
+            });
+            if (cRelevant.length > 0) {
+              return this.pickBest(cRelevant, '🇭🇷 ');
+            }
+          }
+        } catch (e) { /* try next query */ }
+      }
+      // Fall through to normal English search below
+    }
+
     // For TV, search for complete series / season packs
     let searchQuery = title;
     if (category === 'tv') {
@@ -341,37 +371,40 @@ class RankingsSearcher {
       }
 
       // Pick best by seed/leech ratio
-      const best = relevant.reduce((best, item) => {
-        const seeds = parseInt(item.seeders) || 0;
-        const leechers = parseInt(item.leechers) || 1;
-        const ratio = seeds / leechers;
-        const bestSeeds = parseInt(best.seeders) || 0;
-        const bestLeechers = parseInt(best.leechers) || 1;
-        const bestRatio = bestSeeds / bestLeechers;
-        // Prefer higher seeds if ratio is similar, or much better ratio
-        if (seeds > 0 && (ratio > bestRatio || (ratio === bestRatio && seeds > bestSeeds))) {
-          return item;
-        }
-        return best;
-      }, relevant[0]);
-
-      const seeds = parseInt(best.seeders) || 0;
-      const leechers = parseInt(best.leechers) || 0;
-
-      return {
-        name: best.name,
-        size: this.fetcher.formatSize(parseInt(best.size)),
-        sizeBytes: parseInt(best.size) || 0,
-        seeds,
-        leechers,
-        source: 'The Pirate Bay',
-        sourceUrl: `https://thepiratebay.org/description.php?id=${best.id}`,
-        magnet: `magnet:?xt=urn:btih:${best.info_hash}&dn=${encodeURIComponent(best.name)}&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969%2Fannounce`,
-        date: best.added ? new Date(parseInt(best.added) * 1000).toISOString().split('T')[0] : 'N/A',
-      };
+      return this.pickBest(relevant);
     } catch (err) {
       return null;
     }
+  }
+
+  pickBest(relevant, namePrefix = '') {
+    const best = relevant.reduce((best, item) => {
+      const seeds = parseInt(item.seeders) || 0;
+      const leechers = parseInt(item.leechers) || 1;
+      const ratio = seeds / leechers;
+      const bestSeeds = parseInt(best.seeders) || 0;
+      const bestLeechers = parseInt(best.leechers) || 1;
+      const bestRatio = bestSeeds / bestLeechers;
+      if (seeds > 0 && (ratio > bestRatio || (ratio === bestRatio && seeds > bestSeeds))) {
+        return item;
+      }
+      return best;
+    }, relevant[0]);
+
+    const seeds = parseInt(best.seeders) || 0;
+    const leechers = parseInt(best.leechers) || 0;
+
+    return {
+      name: namePrefix + best.name,
+      size: this.fetcher.formatSize(parseInt(best.size)),
+      sizeBytes: parseInt(best.size) || 0,
+      seeds,
+      leechers,
+      source: 'The Pirate Bay',
+      sourceUrl: `https://thepiratebay.org/description.php?id=${best.id}`,
+      magnet: `magnet:?xt=urn:btih:${best.info_hash}&dn=${encodeURIComponent(best.name)}&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969%2Fannounce`,
+      date: best.added ? new Date(parseInt(best.added) * 1000).toISOString().split('T')[0] : 'N/A',
+    };
   }
 
   // Stream rankings results via callback

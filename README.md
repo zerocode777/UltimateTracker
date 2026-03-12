@@ -17,7 +17,11 @@ A personal torrent meta-search aggregator that searches 15+ torrent sites simult
 - **Multi-source search** — queries 15+ torrent sites at once
 - **Real-time results** — results stream in as each source responds (SSE)
 - **Per-source progress bars** — see which sources are still loading
-- **Category filtering** — Movies, TV Shows, Anime, Cartoons, eBooks, Software, Games, Music, Balkan, Balkan Cartoons
+- **Category filtering** — Movies, TV Shows, Anime, Cartoons, eBooks, Audiobooks, Software, Games, Music, Balkan, Balkan Cartoons
+- **Rankings** — curated top lists (IMDB Top 250, Top 100 TV/Games/Books/Audiobooks) with automatic torrent matching
+- **Smart TV pack detection** — rankings prefer complete series over single seasons
+- **Croatian-first audiobooks** — audiobook rankings try Croatian language first, fall back to English
+- **AudioBookBay integration** — dedicated audiobook scraper with magnet link extraction
 - **Sortable columns** — click any column header to sort results
 - **Magnet links** — one-click magnet links for every result
 - **Relevance filtering** — multi-word queries match all significant words
@@ -26,7 +30,7 @@ A personal torrent meta-search aggregator that searches 15+ torrent sites simult
 
 ## Sources
 
-PirateBay, 1337x, TorrentGalaxy, LimeTorrents, KickassTorrents, GloDLS, TorrentDownloads, YTS, EZTV, Nyaa, AniDex, BalkanDownload, CroTorrents, and more.
+PirateBay, 1337x, TorrentGalaxy, LimeTorrents, KickassTorrents, GloDLS, TorrentDownloads, YTS, EZTV, Nyaa, AniDex, AudioBookBay, BalkanDownload, CroTorrents, and more.
 
 ## Quick Start
 
@@ -66,6 +70,7 @@ npm run dev
 3. Results stream in from all sources with progress indicators
 4. Click the magnet icon to open a torrent in your client
 5. Click column headers to sort by name, size, seeds, etc.
+6. Switch to **Rankings** to browse curated top lists with auto-matched torrents
 
 ## Tech Stack
 

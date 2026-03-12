@@ -523,6 +523,7 @@
     rankingResultsHeader.innerHTML = '';
 
     const items = []; // collect results for sorting
+    const skipped = []; // collect skipped titles
 
     const es = new EventSource(`/api/rankings/${type}`);
     rankingEventSource = es;
@@ -538,10 +539,11 @@
         const { rank, queryTitle, torrent, progress } = data;
         items.push({ rank, queryTitle, torrent });
         updateRankingProgress(progress);
-        renderRankingGrid(items);
+        renderRankingGrid(items, skipped);
       }
 
       if (data.type === 'skip') {
+        skipped.push({ rank: data.rank, title: data.queryTitle });
         updateRankingProgress(data.progress);
       }
 
@@ -553,7 +555,7 @@
           <h3>${rankingProgressTitle.textContent}</h3>
           <span class="ranking-found">${items.length} torrents found</span>
         `;
-        renderRankingGrid(items);
+        renderRankingGrid(items, skipped);
       }
     };
 
@@ -570,10 +572,10 @@
     rankingStats.textContent = `${progress.processed} / ${progress.total} processed — ${progress.found} found`;
   }
 
-  function renderRankingGrid(items) {
+  function renderRankingGrid(items, skipped = []) {
     // Sort by rank
     const sorted = [...items].sort((a, b) => a.rank - b.rank);
-    rankingGrid.innerHTML = sorted.map(({ rank, queryTitle, torrent }) => `
+    let html = sorted.map(({ rank, queryTitle, torrent }) => `
       <div class="ranking-item">
         <div class="ranking-rank">#${rank}</div>
         <div class="ranking-info">
@@ -592,6 +594,17 @@
         </div>
       </div>
     `).join('');
+
+    if (skipped.length > 0) {
+      html += `
+        <details class="ranking-skipped">
+          <summary>${skipped.length} items not found (no torrent available)</summary>
+          <ul>${[...skipped].sort((a, b) => a.rank - b.rank).map(s => `<li><span class="skipped-rank">#${s.rank}</span> ${escapeHtml(s.title)}</li>`).join('')}</ul>
+        </details>
+      `;
+    }
+
+    rankingGrid.innerHTML = html;
   }
 
   init();

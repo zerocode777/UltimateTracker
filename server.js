@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const { searchStream, getCategories } = require('./scrapers');
+const RankingsSearcher = require('./scrapers/rankings');
 
 const app = express();
 const PORT = 7777;
@@ -41,6 +42,37 @@ app.get('/api/search', (req, res) => {
 // Categories endpoint
 app.get('/api/categories', (req, res) => {
   res.json(getCategories());
+});
+
+// Rankings endpoints
+const rankings = new RankingsSearcher();
+
+app.get('/api/rankings/types', (req, res) => {
+  res.json(rankings.getTypes());
+});
+
+app.get('/api/rankings/:type', (req, res) => {
+  const { type } = req.params;
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  console.log(`[Rankings] Loading "${type}" rankings...`);
+
+  rankings.streamRankings(type, (event) => {
+    res.write(`data: ${JSON.stringify(event)}\n\n`);
+  }).then(() => {
+    res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
+    res.end();
+    console.log(`[Rankings] "${type}" complete`);
+  }).catch((err) => {
+    res.write(`data: ${JSON.stringify({ type: 'error', message: err.message })}\n\n`);
+    res.end();
+  });
+
+  req.on('close', () => {});
 });
 
 app.listen(PORT, () => {

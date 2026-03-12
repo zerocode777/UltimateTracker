@@ -23,6 +23,7 @@
     'Balkan (TPB)': { icon: '🇭🇷', color: '#1976d2' },
     'BalkanDownload': { icon: '🇧🇦', color: '#0d47a1' },
     'CroTorrents': { icon: '🇭🇷', color: '#d32f2f' },
+    'AudioBookBay': { icon: '🎧', color: '#ff6f00' },
   };
 
   function getSourceMeta(name) {
@@ -38,6 +39,20 @@
   let searchHistory = JSON.parse(localStorage.getItem('ut_history') || '[]');
   let categories = [];
   let currentEventSource = null;
+
+  // Page navigation
+  const navSearch = document.getElementById('navSearch');
+  const navRankings = document.getElementById('navRankings');
+  const rankingsSection = document.getElementById('rankingsSection');
+  const rankingTypes = document.getElementById('rankingTypes');
+  const rankingProgress = document.getElementById('rankingProgress');
+  const rankingProgressTitle = document.getElementById('rankingProgressTitle');
+  const rankingProgressBar = document.getElementById('rankingProgressBar');
+  const rankingStats = document.getElementById('rankingStats');
+  const rankingResults = document.getElementById('rankingResults');
+  const rankingResultsHeader = document.getElementById('rankingResultsHeader');
+  const rankingGrid = document.getElementById('rankingGrid');
+  let rankingEventSource = null;
 
   // DOM refs
   const searchInput = document.getElementById('searchInput');
@@ -450,5 +465,135 @@
     return n.toLocaleString();
   }
 
+  // === Rankings ===
+  function setupNav() {
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const page = btn.dataset.page;
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        if (page === 'search') {
+          searchSection.style.display = '';
+          resultsSection.style.display = allResults.length > 0 ? 'block' : 'none';
+          rankingsSection.style.display = 'none';
+          if (rankingEventSource) { rankingEventSource.close(); rankingEventSource = null; }
+        } else if (page === 'rankings') {
+          searchSection.style.display = 'none';
+          resultsSection.style.display = 'none';
+          rankingsSection.style.display = 'block';
+          loadRankingTypes();
+        }
+      });
+    });
+  }
+
+  async function loadRankingTypes() {
+    try {
+      const resp = await fetch('/api/rankings/types');
+      const types = await resp.json();
+      rankingTypes.innerHTML = types.map(t =>
+        `<div class="ranking-type-card" data-type="${t.id}">
+          <div class="ranking-type-icon">${t.icon}</div>
+          <div class="ranking-type-title">${escapeHtml(t.title)}</div>
+          <div class="ranking-type-count">${t.count} items</div>
+        </div>`
+      ).join('');
+
+      rankingTypes.querySelectorAll('.ranking-type-card').forEach(card => {
+        card.addEventListener('click', () => {
+          rankingTypes.querySelectorAll('.ranking-type-card').forEach(c => c.classList.remove('active'));
+          card.classList.add('active');
+          loadRanking(card.dataset.type);
+        });
+      });
+    } catch (e) {
+      rankingTypes.innerHTML = '<p style="color:var(--text-muted)">Failed to load ranking types</p>';
+    }
+  }
+
+  function loadRanking(type) {
+    if (rankingEventSource) { rankingEventSource.close(); rankingEventSource = null; }
+
+    rankingProgress.style.display = 'block';
+    rankingResults.style.display = 'block';
+    rankingProgressBar.style.width = '0%';
+    rankingStats.textContent = 'Starting...';
+    rankingGrid.innerHTML = '';
+    rankingResultsHeader.innerHTML = '';
+
+    const items = []; // collect results for sorting
+
+    const es = new EventSource(`/api/rankings/${type}`);
+    rankingEventSource = es;
+
+    es.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+
+      if (data.type === 'info') {
+        rankingProgressTitle.textContent = `${data.icon} ${data.title}`;
+      }
+
+      if (data.type === 'result') {
+        const { rank, queryTitle, torrent, progress } = data;
+        items.push({ rank, queryTitle, torrent });
+        updateRankingProgress(progress);
+        renderRankingGrid(items);
+      }
+
+      if (data.type === 'skip') {
+        updateRankingProgress(data.progress);
+      }
+
+      if (data.type === 'done') {
+        es.close();
+        rankingEventSource = null;
+        rankingProgress.style.display = 'none';
+        rankingResultsHeader.innerHTML = `
+          <h3>${rankingProgressTitle.textContent}</h3>
+          <span class="ranking-found">${items.length} torrents found</span>
+        `;
+        renderRankingGrid(items);
+      }
+    };
+
+    es.onerror = () => {
+      es.close();
+      rankingEventSource = null;
+      rankingProgress.style.display = 'none';
+    };
+  }
+
+  function updateRankingProgress(progress) {
+    const pct = progress.total > 0 ? (progress.processed / progress.total) * 100 : 0;
+    rankingProgressBar.style.width = `${pct}%`;
+    rankingStats.textContent = `${progress.processed} / ${progress.total} processed — ${progress.found} found`;
+  }
+
+  function renderRankingGrid(items) {
+    // Sort by rank
+    const sorted = [...items].sort((a, b) => a.rank - b.rank);
+    rankingGrid.innerHTML = sorted.map(({ rank, queryTitle, torrent }) => `
+      <div class="ranking-item">
+        <div class="ranking-rank">#${rank}</div>
+        <div class="ranking-info">
+          <div class="ranking-query">${escapeHtml(queryTitle)}</div>
+          <div class="ranking-torrent-name">
+            <a href="${escapeAttr(torrent.sourceUrl)}" target="_blank" rel="noopener">${escapeHtml(torrent.name)}</a>
+          </div>
+        </div>
+        <div class="ranking-size">${escapeHtml(torrent.size)}</div>
+        <div class="ranking-seeds">▲ ${formatNumber(torrent.seeds)}</div>
+        <div class="ranking-actions">
+          ${torrent.magnet
+            ? `<a href="${escapeAttr(torrent.magnet)}" title="Magnet link">🧲 Magnet</a>`
+            : `<a href="${escapeAttr(torrent.sourceUrl)}" target="_blank" rel="noopener">🔗 Source</a>`
+          }
+        </div>
+      </div>
+    `).join('');
+  }
+
   init();
+  setupNav();
 })();

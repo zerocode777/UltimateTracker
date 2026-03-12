@@ -13,6 +13,7 @@ class PirateBayScraper extends BaseScraper {
     anime: 200,     // Video
     cartoons: 200,  // Video
     ebooks: 601,    // E-books subcategory
+    audiobooks: 102, // Audio books subcategory
     software: 300,  // Applications
     games: 400,     // Games
     music: 100,     // Audio

@@ -15,6 +15,7 @@ const BTDigScraper = require('./btdig');
 const BalkanScraper = require('./balkan');
 const BalkanDownloadScraper = require('./balkandownload');
 const CroTorrentsScraper = require('./crotorrents');
+const AudioBookBayScraper = require('./audiobookbay');
 
 // Instantiate all scrapers
 const scrapers = {
@@ -35,6 +36,7 @@ const scrapers = {
   balkan: new BalkanScraper(),
   balkandownload: new BalkanDownloadScraper(),
   crotorrents: new CroTorrentsScraper(),
+  audiobookbay: new AudioBookBayScraper(),
 };
 
 // Category -> which scrapers to use
@@ -46,6 +48,7 @@ const categoryMap = {
   anime: ['nyaa', 'anidex', 'piratebay', 'x1337', 'torrentgalaxy'],
   cartoons: ['piratebay', 'x1337', 'torrentgalaxy', 'limetorrents', 'kickass', 'balkan', 'balkandownload'],
   ebooks: ['piratebay'],  // Only TPB has ebook category (601). Others return general results.
+  audiobooks: ['audiobookbay', 'piratebay'],
   software: ['piratebay', 'x1337', 'torrentgalaxy', 'kickass', 'glodls', 'limetorrents'],
   games: ['piratebay', 'x1337', 'torrentgalaxy', 'kickass', 'glodls', 'limetorrents', 'crotorrents'],
   music: ['piratebay', 'x1337', 'torrentgalaxy', 'limetorrents', 'kickass'],
@@ -61,6 +64,7 @@ function getCategories() {
     { id: 'anime', name: 'Anime', icon: '⛩️' },
     { id: 'cartoons', name: 'Cartoons', icon: '🎨' },
     { id: 'ebooks', name: 'eBooks', icon: '📚' },
+    { id: 'audiobooks', name: 'Audiobooks', icon: '🎧' },
     { id: 'software', name: 'Software', icon: '💻' },
     { id: 'games', name: 'Games', icon: '🎮' },
     { id: 'music', name: 'Music', icon: '🎵' },

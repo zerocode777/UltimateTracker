@@ -21,7 +21,10 @@
         </svg>
         <span class="logo-text">Ultimate<span class="accent">Tracker</span></span>
       </div>
-      <div class="header-stats" id="headerStats"></div>
+      <nav class="header-nav">
+        <button class="nav-btn active" data-page="search" id="navSearch">🔍 Search</button>
+        <button class="nav-btn" data-page="rankings" id="navRankings">🏆 Rankings</button>
+      </nav>
     </header>
 
     <!-- Search Section -->
@@ -105,6 +108,27 @@
         </svg>
         <p>No results found</p>
         <span>Try different keywords or change category</span>
+      </div>
+    </section>
+
+    <!-- Rankings Section -->
+    <section class="rankings-section" id="rankingsSection" style="display:none;">
+      <h2 class="rankings-title">🏆 Top <span class="accent">Rankings</span></h2>
+      <p class="rankings-sub">Best torrents for top-rated movies, series, games & books</p>
+
+      <div class="ranking-types" id="rankingTypes"></div>
+
+      <div class="ranking-progress" id="rankingProgress" style="display:none;">
+        <div class="progress-header" id="rankingProgressTitle">Loading...</div>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" id="rankingProgressBar" style="width:0%"></div>
+        </div>
+        <div class="ranking-stats" id="rankingStats">0 / 0 processed</div>
+      </div>
+
+      <div class="ranking-results" id="rankingResults" style="display:none;">
+        <div class="ranking-results-header" id="rankingResultsHeader"></div>
+        <div class="ranking-grid" id="rankingGrid"></div>
       </div>
     </section>
 

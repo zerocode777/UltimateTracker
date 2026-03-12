@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UltimateTracker</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <circle cx="16" cy="16" r="14" stroke="#60a5fa" stroke-width="2.5"/>
+          <path d="M16 6 L16 16 L24 20" stroke="#60a5fa" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="16" cy="16" r="3" fill="#60a5fa"/>
+        </svg>
+        <span class="logo-text">Ultimate<span class="accent">Tracker</span></span>
+      </div>
+      <div class="header-stats" id="headerStats"></div>
+    </header>
+
+    <!-- Search Section -->
+    <section class="search-section" id="searchSection">
+      <h1 class="hero-title">Search <span class="accent">Everything</span></h1>
+      <p class="hero-sub">Aggregating 15 torrent sources in one place</p>
+
+      <div class="search-container">
+        <div class="search-box">
+          <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input type="text" id="searchInput" placeholder="Search for torrents..." autocomplete="off" autofocus>
+          <div class="search-actions">
+            <button class="clear-btn" id="clearBtn" title="Clear">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 6 6 18M6 6l12 12"/>
+              </svg>
+            </button>
+            <button class="search-btn" id="searchBtn">Search</button>
+          </div>
+        </div>
+        <div class="autocomplete-dropdown" id="autocomplete"></div>
+      </div>
+
+      <!-- Categories -->
+      <div class="categories" id="categories"></div>
+    </section>
+
+    <!-- Results Section -->
+    <section class="results-section" id="resultsSection" style="display:none;">
+      <div class="results-header">
+        <div class="results-info">
+          <span id="resultCount">0 results</span>
+          <span class="results-divider">|</span>
+          <span id="searchTime">0.00s</span>
+          <span class="results-divider" id="errorDivider" style="display:none">|</span>
+          <button class="error-toggle" id="errorToggle" style="display:none">
+            <span id="errorCount">0</span> sources failed
+          </button>
+        </div>
+        <div class="results-actions">
+          <button class="back-btn" id="backBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            New Search
+          </button>
+        </div>
+      </div>
+
+      <!-- Error panel -->
+      <div class="error-panel" id="errorPanel" style="display:none;">
+        <div id="errorList"></div>
+      </div>
+
+      <!-- Source filters -->
+      <div class="source-filters" id="sourceFilters"></div>
+
+      <!-- Results Table -->
+      <div class="table-wrapper">
+        <table class="results-table" id="resultsTable">
+          <thead>
+            <tr>
+              <th class="sortable" data-sort="name">Name <span class="sort-arrow"></span></th>
+              <th class="sortable" data-sort="size">Size <span class="sort-arrow"></span></th>
+              <th class="sortable col-seeds" data-sort="seeds">Seeds <span class="sort-arrow">▼</span></th>
+              <th class="sortable col-leechers" data-sort="leechers">Leechers <span class="sort-arrow"></span></th>
+              <th class="sortable" data-sort="date">Date <span class="sort-arrow"></span></th>
+              <th class="sortable" data-sort="source">Source <span class="sort-arrow"></span></th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody"></tbody>
+        </table>
+      </div>
+
+      <div class="no-results" id="noResults" style="display:none;">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#4b5563" stroke-width="1.5">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M8 11h6"/>
+        </svg>
+        <p>No results found</p>
+        <span>Try different keywords or change category</span>
+      </div>
+    </section>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display:none;">
+      <div class="loading-content">
+        <div class="spinner"></div>
+        <p class="loading-text">Searching across sources...</p>
+        <div class="loading-sources" id="loadingSources"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -38,9 +38,9 @@ Each category uses only sites that expose native top-list or browse-by-seeders e
 | Anime | Nyaa (browse, sort=seeders), AniDex (browse, sort=seeders) |
 | Ebooks | TPB (top100 other), 1337x (/top-100-other) |
 | Audiobooks | AudioBookBay (browse), TPB (audio cat) |
-| Cartoons | TPB, 1337x, TorrentGalaxy |
-| Balkan | BalkanDownload (browse), CroTorrents (browse) |
-| Balkan-Cartoons | BalkanDownload (crtani filter), CroTorrents (crtani filter) |
+| Cartoons | TPB (top100 video), 1337x (`/top-100` filtered to Animation category), TorrentGalaxy (cat=15 Animation browse) |
+| Balkan | None — BalkanDownload and CroTorrents are search-only and return zero seeds/leechers; Popular tab shows "No popularity data available for this category" |
+| Balkan-Cartoons | None — same reason as Balkan |
 
 ---
 
@@ -63,8 +63,10 @@ Each category uses only sites that expose native top-list or browse-by-seeders e
 
 ### Cache Structure
 
+The cache object lives in `scrapers/popular.js` (the orchestrator) and is exported. `server.js` imports the orchestrator's `getPopular(category)` and `refreshPopular(category)` functions — it never touches the cache directly.
+
 ```js
-// In-memory, lives in server.js
+// In scrapers/popular.js
 const popularCache = {
   movies: { data: [...], fetchedAt: Date, status: 'fresh' | 'fetching' | 'error' },
   tv:     { data: [...], fetchedAt: Date, status: 'fresh' | 'fetching' | 'error' },
@@ -76,15 +78,16 @@ const popularCache = {
 
 | Method | Path | Behavior |
 |---|---|---|
-| `GET` | `/api/popular/:category` | Returns cached data if < 6h old; triggers background refresh if stale; first-load fetches synchronously via SSE |
-| `POST` | `/api/popular/:category/refresh` | Force-refresh that category's cache immediately |
+| `GET` | `/api/popular/:category` | Always returns JSON. Returns cached data immediately if < 6h old; returns stale data + triggers background refresh if ≥ 6h old; fetches synchronously (blocking, may take 10–20s) if cache is missing |
+| `POST` | `/api/popular/:category/refresh` | Force-refresh that category's cache — **blocks until complete** (may take 10–20s); returns `{ status: 'ok' }` when done |
 
-**Cache behavior on GET:**
-- Cache fresh (< 6h): return JSON immediately
-- Cache stale (≥ 6h): return stale data + trigger background refresh
-- Cache missing: fetch synchronously, stream progress via SSE (same pattern as Search)
+**Cache behavior on GET (always JSON):**
 
-**Background timer:** `setInterval` every 6 hours refreshes all categories sequentially.
+- Cache fresh (< 6h): respond immediately with `{ data: [...], fetchedAt, status: 'fresh' }`
+- Cache stale (≥ 6h): respond immediately with stale data + `{ status: 'stale' }`, kick off background refresh
+- Cache missing: fetch synchronously (blocking), respond with fresh data once complete; client shows a spinner for the duration
+
+**Background timer:** `setInterval` every 6 hours refreshes all categories sequentially. Each category fetch has a 30-second timeout to prevent a hung scraper from blocking the cycle.
 
 ### Deduplication Algorithm
 
@@ -104,15 +107,25 @@ const popularCache = {
 **`public/index.html`**
 - Add `🔥 Popular` tab to main nav header, between Search and Rankings
 
+**`public/popular.js`** (new file — extracted from app.js to stay within 300-line limit)
+
+- All Popular tab logic lives here; loaded via `<script>` tag in index.html
+
 **`public/app.js`**
-- Add `popular` route to the hash-based SPA router (`#popular`)
-- Add `showPopular(category)` function
-  - Fetches `GET /api/popular/:category`
+
+- Add `popular` route to the hash-based SPA router (`#popular`) — delegates immediately to `showPopular()` defined in `popular.js`
+- No Popular tab logic lives in `app.js` itself
+
+**`public/popular.js`** contains:
+
+- `showPopular(category)` — entry point called by `app.js` router
+  - Fetches `GET /api/popular/:category` (standard JSON fetch, no SSE)
   - Renders ranked table
-  - Shows spinner/skeleton on first load (SSE progress)
+  - Shows spinner while waiting on first load (cache-miss fetch may take 10–20s)
   - Shows "Last refreshed X ago" and 🔄 Refresh button
+  - If response has `status: 'stale'`, shows "Refreshing in background…" indicator
 - Default category when tab opens: **All**
-- Refresh button calls `POST /api/popular/:category/refresh` then re-fetches
+- Refresh button calls `POST /api/popular/:category/refresh` (blocking) then re-fetches
 
 **`public/style.css`**
 - Add `.popular-meta` — small text row for "Last refreshed X ago · 🔄 Refresh"

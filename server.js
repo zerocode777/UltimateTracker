@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const { searchStream, getCategories } = require('./scrapers');
 const RankingsSearcher = require('./scrapers/rankings');
+const { getPopular, refreshPopular } = require('./scrapers/popular');
 
 const app = express();
 const PORT = 7777;
@@ -73,6 +74,30 @@ app.get('/api/rankings/:type', (req, res) => {
   });
 
   req.on('close', () => {});
+});
+
+// Popular torrents endpoint
+app.get('/api/popular/:category', (req, res) => {
+  const { category } = req.params;
+
+  try {
+    const result = getPopular(category);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ error: 'Unknown category' });
+  }
+});
+
+// Popular torrents refresh endpoint
+app.post('/api/popular/:category/refresh', async (req, res) => {
+  const { category } = req.params;
+
+  try {
+    await refreshPopular(category);
+    res.json({ status: 'ok' });
+  } catch (err) {
+    res.status(500).json({ error: 'Refresh failed' });
+  }
 });
 
 app.listen(PORT, () => {

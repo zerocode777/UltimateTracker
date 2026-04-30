@@ -2,7 +2,7 @@ const BaseScraper = require('./base');
 
 class Popular1337x extends BaseScraper {
   constructor() {
-    super('1337x', 'https://1337x.to');
+    super('1337x', 'https://www.1337xx.to');
   }
 
   static CAT_URL = {

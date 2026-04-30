@@ -23,6 +23,7 @@
       </div>
       <nav class="header-nav">
         <button class="nav-btn active" data-page="search" id="navSearch">🔍 Search</button>
+        <button class="nav-btn" data-page="popular">🔥 Popular</button>
         <button class="nav-btn" data-page="rankings" id="navRankings">🏆 Rankings</button>
       </nav>
     </header>
@@ -132,6 +133,9 @@
       </div>
     </section>
 
+    <!-- Popular Section -->
+    <div id="popularSection" style="display:none"></div>
+
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay" style="display:none;">
       <div class="loading-content">
@@ -143,5 +147,6 @@
   </div>
 
   <script src="app.js"></script>
+  <script src="popular.js"></script>
 </body>
 </html>

@@ -91,8 +91,8 @@ function renderMeta(section, result, category) {
   metaRow.className = 'popular-meta';
   metaRow.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:0.85rem;color:var(--text-muted)';
 
-  if (result.cachedAt) {
-    metaRow.appendChild(el('span', null, `Last refreshed ${timeAgo(result.cachedAt)}`));
+  if (result.fetchedAt) {
+    metaRow.appendChild(el('span', null, `Last refreshed ${timeAgo(result.fetchedAt)}`));
     metaRow.appendChild(el('span', null, '·'));
 
     const refreshBtn = el('button', 'back-btn', '🔄 Refresh');
@@ -226,6 +226,14 @@ window.showPopular = async function showPopular(category) {
 
   const popularSection = document.getElementById('popularSection');
   if (!popularSection) return;
+
+  const searchSection = document.getElementById('searchSection');
+  const resultsSection = document.getElementById('resultsSection');
+  const rankingsSection = document.getElementById('rankingsSection');
+  if (searchSection) searchSection.style.display = 'none';
+  if (resultsSection) resultsSection.style.display = 'none';
+  if (rankingsSection) rankingsSection.style.display = 'none';
+
   popularSection.style.display = 'block';
 
   popularSection.textContent = '';

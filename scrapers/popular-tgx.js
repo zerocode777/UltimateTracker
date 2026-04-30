@@ -13,7 +13,7 @@ class PopularTGX extends BaseScraper {
   };
 
   constructor() {
-    super('TorrentGalaxy', 'https://torrentgalaxy.org');
+    super('TGx', 'https://torrentgalaxy.org');
   }
 
   getUrl(category) {

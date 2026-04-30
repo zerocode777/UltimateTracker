@@ -102,7 +102,10 @@ function renderMeta(section, result, category) {
       refreshBtn.disabled = true;
       try {
         await fetch(`/api/popular/${category}/refresh`, { method: 'POST' });
-      } catch (_) { /* ignore */ }
+      } catch (_) {
+        refreshBtn.disabled = false;
+        refreshBtn.textContent = '🔄 Refresh';
+      }
       window.showPopular(category);
     });
     metaRow.appendChild(refreshBtn);
@@ -241,6 +244,7 @@ window.showPopular = async function showPopular(category) {
   let result;
   try {
     const resp = await fetch(`/api/popular/${category}`);
+    if (!resp.ok) throw new Error(resp.statusText);
     result = await resp.json();
   } catch (_) {
     showMessage(contentArea, 'Unable to load popular torrents — try refreshing');

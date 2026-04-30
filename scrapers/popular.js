@@ -57,7 +57,7 @@ function deduplicate(items) {
 
     if (hash) {
       const existing = byHash.get(hash);
-      if (!existing || score > (existing.seeds + existing.leechers)) {
+      if (!existing || score > ((existing.seeds || 0) + (existing.leechers || 0))) {
         byHash.set(hash, item);
       }
       continue;
@@ -67,7 +67,7 @@ function deduplicate(items) {
     if (!norm) continue;
 
     const existing = byName.get(norm);
-    if (!existing || score > (existing.seeds + existing.leechers)) {
+    if (!existing || score > ((existing.seeds || 0) + (existing.leechers || 0))) {
       byName.set(norm, item);
     }
   }
@@ -157,7 +157,7 @@ async function refreshPopular(category) {
 }
 
 // Background timer: refresh all non-empty categories every 6 hours
-setInterval(async () => {
+const _bgTimer = setInterval(async () => {
   for (const cat of Object.keys(SOURCES)) {
     if (SOURCES[cat].length === 0) continue;
     try { await fetchCategory(cat); } catch (_) {}

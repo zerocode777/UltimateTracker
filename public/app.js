@@ -477,12 +477,19 @@
           searchSection.style.display = '';
           resultsSection.style.display = allResults.length > 0 ? 'block' : 'none';
           rankingsSection.style.display = 'none';
+          document.getElementById('popularSection').style.display = 'none';
           if (rankingEventSource) { rankingEventSource.close(); rankingEventSource = null; }
         } else if (page === 'rankings') {
           searchSection.style.display = 'none';
           resultsSection.style.display = 'none';
           rankingsSection.style.display = 'block';
+          document.getElementById('popularSection').style.display = 'none';
           loadRankingTypes();
+        } else if (page === 'popular') {
+          searchSection.style.display = 'none';
+          resultsSection.style.display = 'none';
+          rankingsSection.style.display = 'none';
+          showPopular(null);
         }
       });
     });

@@ -77,11 +77,11 @@ app.get('/api/rankings/:type', (req, res) => {
 });
 
 // Popular torrents endpoint
-app.get('/api/popular/:category', (req, res) => {
+app.get('/api/popular/:category', async (req, res) => {
   const { category } = req.params;
 
   try {
-    const result = getPopular(category);
+    const result = await getPopular(category);
     res.json(result);
   } catch (err) {
     res.status(400).json({ error: 'Unknown category' });

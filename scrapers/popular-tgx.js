@@ -13,7 +13,7 @@ class PopularTGX extends BaseScraper {
   };
 
   constructor() {
-    super('TorrentGalaxy', 'https://torrentgalaxy.to');
+    super('TorrentGalaxy', 'https://torrentgalaxy.org');
   }
 
   getUrl(category) {
@@ -59,14 +59,11 @@ class PopularTGX extends BaseScraper {
         }
 
         // Find seeds
-        const seedText = $(row).find('font[color="green"]').first().text().trim();
+        const seedText = $(row).find('span[title="Seeders/Leechers"] font[color="green"], span.badge-active b, font[color="green"]').first().text().trim();
         const seeds = parseInt(seedText) || 0;
 
         // Find leechers
-        let leechText = $(row).find('font[color="#ff0000"]').first().text().trim();
-        if (!leechText) {
-          leechText = $(row).find('font[color="red"]').first().text().trim();
-        }
+        const leechText = $(row).find('span[title="Seeders/Leechers"] font[color="#ff0000"], font[color="#ff0000"]').first().text().trim();
         const leechers = parseInt(leechText) || 0;
 
         // Skip if dead (0 seeds AND 0 leechers)

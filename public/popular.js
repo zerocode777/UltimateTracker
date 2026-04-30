@@ -14,18 +14,13 @@ const SOURCE_ICONS = {
 };
 
 const CATEGORIES = [
-  { label: 'All',             key: 'all' },
-  { label: 'Movies',          key: 'movies' },
-  { label: 'TV',              key: 'tv' },
-  { label: 'Music',           key: 'music' },
-  { label: 'Games',           key: 'games' },
-  { label: 'Software',        key: 'software' },
-  { label: 'Anime',           key: 'anime' },
-  { label: 'Ebooks',          key: 'ebooks' },
-  { label: 'Audiobooks',      key: 'audiobooks' },
-  { label: 'Cartoons',        key: 'cartoons' },
-  { label: 'Balkan',          key: 'balkan' },
-  { label: 'Balkan-Cartoons', key: 'balkan-cartoons' },
+  { label: 'All',    key: 'all' },
+  { label: 'Movies', key: 'movies' },
+  { label: 'TV',     key: 'tv' },
+  { label: 'Music',  key: 'music' },
+  { label: 'Games',  key: 'games' },
+  { label: 'Anime',  key: 'anime' },
+  { label: 'Ebooks', key: 'ebooks' },
 ];
 
 function timeAgo(date) {
@@ -131,7 +126,16 @@ function buildRankCell(rank) {
 function buildNameCell(item) {
   const td = el('td', 'torrent-name');
   td.title = item.name || '';
-  td.appendChild(el('span', null, item.name || '(unknown)'));
+  if (item.sourceUrl) {
+    const a = document.createElement('a');
+    a.href = item.sourceUrl;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.textContent = item.name || '(unknown)';
+    td.appendChild(a);
+  } else {
+    td.appendChild(el('span', null, item.name || '(unknown)'));
+  }
   return td;
 }
 

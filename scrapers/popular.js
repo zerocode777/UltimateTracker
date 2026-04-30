@@ -13,16 +13,16 @@ const popularABB = require('./popular-abb');
 const TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 const SOURCES = {
-  all:               [popularTPB, popular1337x, popularTGX, popularSolid],
-  movies:            [popularTPB, popular1337x, popularYTS, popularTGX, popularLime],
-  tv:                [popularTPB, popular1337x, popularEZTV, popularTGX, popularLime],
-  music:             [popularTPB, popular1337x, popularTGX, popularLime],
-  games:             [popularTPB, popular1337x, popularTGX, popularSolid],
-  software:          [popularTPB, popular1337x, popularTGX, popularSolid],
+  all:               [popularTPB, popular1337x],
+  movies:            [popular1337x],
+  tv:                [popularEZTV, popular1337x],
+  music:             [popular1337x],
+  games:             [popular1337x],
+  software:          [],
   anime:             [popularNyaa],
-  ebooks:            [popularTPB, popular1337x],
-  audiobooks:        [popularABB, popularTPB],
-  cartoons:          [popularTPB, popular1337x, popularTGX],
+  ebooks:            [popular1337x],
+  audiobooks:        [],
+  cartoons:          [],
   balkan:            [],
   'balkan-cartoons': [],
 };

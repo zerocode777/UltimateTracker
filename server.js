@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const { searchStream, getCategories } = require('./scrapers');
 const RankingsSearcher = require('./scrapers/rankings');
+const { getPopular, refreshPopular } = require('./scrapers/popular');
 
 const app = express();
 const PORT = 7777;
@@ -75,6 +76,40 @@ app.get('/api/rankings/:type', (req, res) => {
   req.on('close', () => {});
 });
 
+// Popular torrents endpoint
+app.get('/api/popular/:category', async (req, res) => {
+  const { category } = req.params;
+
+  try {
+    const result = await getPopular(category);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ error: 'Unknown category' });
+  }
+});
+
+// Popular torrents refresh endpoint
+app.post('/api/popular/:category/refresh', async (req, res) => {
+  const { category } = req.params;
+
+  try {
+    await refreshPopular(category);
+    res.json({ status: 'ok' });
+  } catch (err) {
+    res.status(500).json({ error: 'Refresh failed' });
+  }
+});
+
 app.listen(PORT, () => {
-  console.log(`UltimateTracker running at http://localhost:${PORT}`);
+  const url = `http://localhost:${PORT}`;
+  console.log(`UltimateTracker running at ${url}`);
+
+  // When launched as a bundled exe, auto-open the user's default browser.
+  if (process.pkg) {
+    const { spawn } = require('child_process');
+    const [cmd, args] = process.platform === 'win32' ? ['cmd.exe', ['/c', 'start', '', url]]
+                      : process.platform === 'darwin' ? ['open', [url]]
+                      : ['xdg-open', [url]];
+    spawn(cmd, args, { detached: true, stdio: 'ignore' }).unref();
+  }
 });

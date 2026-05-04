@@ -101,5 +101,15 @@ app.post('/api/popular/:category/refresh', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`UltimateTracker running at http://localhost:${PORT}`);
+  const url = `http://localhost:${PORT}`;
+  console.log(`UltimateTracker running at ${url}`);
+
+  // When launched as a bundled exe, auto-open the user's default browser.
+  if (process.pkg) {
+    const { spawn } = require('child_process');
+    const [cmd, args] = process.platform === 'win32' ? ['cmd.exe', ['/c', 'start', '', url]]
+                      : process.platform === 'darwin' ? ['open', [url]]
+                      : ['xdg-open', [url]];
+    spawn(cmd, args, { detached: true, stdio: 'ignore' }).unref();
+  }
 });

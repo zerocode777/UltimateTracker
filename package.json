@@ -3,13 +3,29 @@
   "version": "1.0.0",
   "description": "Personal torrent meta-search aggregator",
   "main": "server.js",
+  "bin": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "node --watch server.js",
+    "build:exe": "pkg . --output dist/UltimateTracker.exe"
+  },
+  "pkg": {
+    "scripts": [
+      "scrapers/**/*.js"
+    ],
+    "assets": [
+      "public/**/*"
+    ],
+    "targets": [
+      "node20-win-x64"
+    ]
   },
   "dependencies": {
-    "express": "^4.18.2",
     "cheerio": "^1.0.0-rc.12",
+    "express": "^4.18.2",
     "node-fetch": "^2.7.0"
+  },
+  "devDependencies": {
+    "@yao-pkg/pkg": "^6.19.0"
   }
 }
